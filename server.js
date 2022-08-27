@@ -5,6 +5,9 @@ app.use(bodyParser.urlencoded({extended : true}));
 const MongoClient = require('mongodb').MongoClient;
 app.set('view engine', 'ejs');
 
+app.use('/public', express.static('public'));
+
+
 var db;
 /* 뫃고DB 연결 */
 MongoClient.connect('mongodb+srv://admin:qwer1234@cluster0.gxtyhfw.mongodb.net/?retryWrites=true&w=majority', function(err, client){
@@ -26,11 +29,22 @@ MongoClient.connect('mongodb+srv://admin:qwer1234@cluster0.gxtyhfw.mongodb.net/?
 
   app.post('/add', function(req, res){
     res.send('전송완료');
-    db.collection('post').insertOne({제목: req.body.title, 날짜 : req.body.date}, function(err, result){
+    db.collection('counter').findOne({name : '게시물갯수'}, function(err, result){
       if(err){
-        return console.log(err);
-      }
-      console.log('저장완료');
+        return console.log(err)
+      } 
+      let totalPost = result.totalPost;
+
+      db.collection('post').insertOne({_id : totalPost + 1, 제목: req.body.title, 날짜 : req.body.date}, function(err, result){
+        if(err){
+          return console.log(err);
+        }
+        db.collection('counter').updateOne({name : '게시물갯수'}, { $inc : {totalPost : 1}}, function(err, result){
+          if(err){
+            return console.log(err);
+          }
+        })
+      });
     });
   })
 
@@ -53,11 +67,11 @@ app.get('/beauty', function(req, res){
 })
 
 app.get('/', function(req, res){
-  res.sendFile(__dirname + '/index.html');
+  res.render('index.ejs');
 })
 
 app.get('/write', function(req, res){
-  res.sendFile(__dirname + '/write.html');
+  res.render('write.ejs');
 })
 
 app.get('/list', function(req, res){
@@ -72,4 +86,29 @@ app.get('/list', function(req, res){
     res.render('list.ejs', { posts : result });
   });
   
+})
+
+app.delete('/delete', function(res, req){
+  res.body._id = parseInt(res.body._id);
+  db.collection('post').deleteOne(res.body, function(err, result){
+    if(err){
+      return console.log(err);
+    }
+    /* 성공코드 보내기 */
+    req.status(200).send({ message : "성공했습니다" });
+
+    /* 실패코드 보내기 */
+    // req.status(400).send({ message : "실패했습니다" });
+  })
+})
+
+app.get('/detail/:id', function(res, req){
+  db.collection('post').findOne({_id : parseInt(res.params.id)}, function(err, result){
+    if(err){
+      return console.log(err);
+    }
+    console.log(result);
+    req.render('detail.ejs', { data : result });
+
+  });
 })
