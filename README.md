@@ -8,6 +8,7 @@ Node.js, Eexpress.js를 이용하여 제작한 to-do-app입니다.
 - router 파일 만들어 관리
 - 회원과 게시판 기능 구현
 - 웹소켓으로 채팅서비스 구현(socket.io)
+- 환경변수는 .env 파일에 저장
 
 ### Views
 - EJS 템플릿을 사용한 HTML 개발
