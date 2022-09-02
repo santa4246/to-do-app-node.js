@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
@@ -12,7 +13,7 @@ app.use('/public', express.static('public'));
 
 var db;
 /* 뫃고DB 연결 */
-MongoClient.connect('mongodb+srv://admin:qwer1234@cluster0.gxtyhfw.mongodb.net/?retryWrites=true&w=majority', function(err, client){
+MongoClient.connect(process.env.DB_URL, function(err, client){
   /* 에러코드 */
   if(err){
     return console.log(err);
@@ -20,6 +21,10 @@ MongoClient.connect('mongodb+srv://admin:qwer1234@cluster0.gxtyhfw.mongodb.net/?
 
   /* todoapp 이라는 database에 연결 */
   db = client.db('todoapp');
+
+  app.listen(process.env.PORT, function(){
+    console.log('listening on 8080');
+  });
   
   /* db.collection('post').insertOne({이름: 'John', 나이 : 20}, function(err, result){
     if(err){
@@ -49,12 +54,6 @@ MongoClient.connect('mongodb+srv://admin:qwer1234@cluster0.gxtyhfw.mongodb.net/?
       });
     });
   })
-
-
-
-  app.listen(8080, function(){
-    console.log('listening on 8080');
-  });
 })
 
 
