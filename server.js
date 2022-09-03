@@ -194,10 +194,32 @@ function checkUser(res, req, next){
   }
 }
 
-/* 검색 */
-app.get('/search', (res, req) =>{
-  db.collection('post').find({ 제목 : res.query.value }).toArray((err, result) =>{
-    req.render('search.ejs', {posts : result})
+/* 검색기능 */
+app.get('/search', (res, req) => {
+  /* 제목 : res.query.value => 검색 속도가 느리다 */
+  /* $text : { $search : res.query.value } => 한글 친화적이지 않음. 띄어쓰기 단위로 indexing 하기 때문에 단어만 쓰면 못찾음 */
+  /* search index 사용 => 한글에 맞게 변경 가능 */
+  let searchHow = [
+    {
+      $search: {
+        index: 'searchTitle',/* 인덱스 명 */
+        text: { /* 검색 요청 */
+          query: res.query.value,
+          path: '제목' /* 제목, 날짜 둘다 찾고 싶으면 ['제목', '날짜'] */ /* collection 안의 항목 */
+        }
+      }
+    },
+    /* 검색결과에서 필터주기 */
+    /* 0은 안보여지게, 1은 보여지게, score는 검색어 관련도 점수 */
+    { $project : { 제목: 1, _id: 1, score: { $meta: "searchScore" } } },
+    /* 찾은 목록 정렬하기 */
+    { $sort : { _id : 1 } }, 
+    /* 10개만 짤라서 보여주기 */
+    { $limit : 10 }
+  ]
+  db.collection('post').aggregate(searchHow).toArray((err, result) => {
+    if(err) return console.log("err : ", err);
+      console.log(result);
+      req.render('search.ejs', {posts : result});
   });
 })
-
