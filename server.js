@@ -193,3 +193,11 @@ function checkUser(res, req, next){
     req.send('로그인 해주세요.');
   }
 }
+
+/* 검색 */
+app.get('/search', (res, req) =>{
+  db.collection('post').find({ 제목 : res.query.value }).toArray((err, result) =>{
+    req.render('search.ejs', {posts : result})
+  });
+})
+
