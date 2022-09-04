@@ -32,28 +32,6 @@ MongoClient.connect(process.env.DB_URL, function(err, client){
     }
     console.log('저장완료');
   }); */
-  
-
-  app.post('/add', function(req, res){
-    res.send('전송완료');
-    db.collection('counter').findOne({name : '게시물갯수'}, function(err, result){
-      if(err){
-        return console.log(err)
-      } 
-      let totalPost = result.totalPost;
-
-      db.collection('post').insertOne({_id : totalPost + 1, 제목: req.body.title, 날짜 : req.body.date}, function(err, result){
-        if(err){
-          return console.log(err);
-        }
-        db.collection('counter').updateOne({name : '게시물갯수'}, { $inc : {totalPost : 1}}, function(err, result){
-          if(err){
-            return console.log(err);
-          }
-        })
-      });
-    });
-  })
 })
 
 
@@ -89,20 +67,6 @@ app.get('/list', function(req, res){
   
 })
 
-app.delete('/delete', function(res, req){
-  res.body._id = parseInt(res.body._id);
-  db.collection('post').deleteOne(res.body, function(err, result){
-    if(err){
-      return console.log(err);
-    }
-    /* 성공코드 보내기 */
-    req.status(200).send({ message : "성공했습니다" });
-
-    /* 실패코드 보내기 */
-    // req.status(400).send({ message : "실패했습니다" });
-  })
-})
-
 app.get('/detail/:id', function(res, req){
   db.collection('post').findOne({_id : parseInt(res.params.id)}, function(err, result){
     if(err){
@@ -128,7 +92,7 @@ app.put('/edit',function(res, req){
 })
 
 
-/* 회원가입 & 로그인 */
+/* 로그인 */
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
@@ -181,6 +145,13 @@ app.get('/fail', function(res, req){
   req.render('fail.ejs');
 })
 
+/* 회원가입  */
+app.post('/register', function(req, res){
+  db.collection('login').insertOne( { id : req.body.id, pw : req.body.pw }, function(err, result){
+    res.redirect('/');
+  } )
+})
+
 /* 마이페이지 */
 app.get('/mypage', checkUser, function(res, req){
   req.render('mypage.ejs', {사용자 : res.user});
@@ -222,4 +193,46 @@ app.get('/search', (res, req) => {
       console.log(result);
       req.render('search.ejs', {posts : result});
   });
+})
+
+/* 게시물 추가 */
+app.post('/add', function(req, res){
+  res.send('전송완료');
+  db.collection('counter').findOne({name : '게시물갯수'}, function(err, result){
+    if(err){
+      return console.log(err)
+    } 
+    let totalPost = result.totalPost;
+    let addNewPost = {_id : totalPost + 1, 제목: req.body.title, 날짜 : req.body.date, 작성자 : req.user._id};
+
+    db.collection('post').insertOne(addNewPost, function(err, result){
+      if(err){
+        return console.log(err);
+      }
+      db.collection('counter').updateOne({name : '게시물갯수'}, { $inc : {totalPost : 1}}, function(err, result){
+        if(err){
+          return console.log(err);
+        }
+      })
+    });
+  });
+})
+
+/* 게시물 삭제 */
+app.delete('/delete', function(req, res){
+  req.body._id = parseInt(req.body._id);
+
+  /* 아이디와 작성자가 일치하는 데이터 */
+  let deleteData = { _id : req.body._id, 작성자 : req.user._id }
+
+  db.collection('post').deleteOne(deleteData, function(err, result){
+    if(err){
+      return console.log(err);
+    }
+    /* 성공코드 보내기 */
+    res.status(200).send({ message : "성공했습니다" });
+
+    /* 실패코드 보내기 */
+    // res.status(400).send({ message : "실패했습니다" });
+  })
 })
