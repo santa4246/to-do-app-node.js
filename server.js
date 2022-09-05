@@ -67,27 +67,27 @@ app.get('/list', function(req, res){
   
 })
 
-app.get('/detail/:id', function(res, req){
-  db.collection('post').findOne({_id : parseInt(res.params.id)}, function(err, result){
+app.get('/detail/:id', function(req, res){
+  db.collection('post').findOne({_id : parseInt(req.params.id)}, function(err, result){
     if(err){
       return console.log(err);
     }
     console.log(result);
-    req.render('detail.ejs', { data : result });
+    res.render('detail.ejs', { data : result });
 
   });
 })
 
-app.get('/edit/:id', function(res, req){
-  db.collection('post').findOne({_id : parseInt(res.params.id)}, function(err, result){
+app.get('/edit/:id', function(req, res){
+  db.collection('post').findOne({_id : parseInt(req.params.id)}, function(err, result){
     console.log(result);
-    req.render('edit.ejs', { post : result })
+    res.render('edit.ejs', { post : result })
   })
 })
 
-app.put('/edit',function(res, req){
-  db.collection('post').updateOne({ _id : parseInt(res.body.id) }, { $set : { 제목 : res.body.title, 날짜 : res.body.date }}, function(err, result){
-    req.redirect('/list');
+app.put('/edit',function(req, res){
+  db.collection('post').updateOne({ _id : parseInt(req.body.id) }, { $set : { 제목 : req.body.title, 날짜 : req.body.date }}, function(err, result){
+    res.redirect('/list');
   });
 })
 
@@ -97,19 +97,21 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
 
+/* app.use => 미들웨어를 쓰고싶을때 사용 */
+/* 미들웨어 : 요청과 응답 사이에 실행되는 코드 */
 app.use(session({secret : '비밀코드', resave : true, saveUninitialized: false}))
 app.use(passport.initialize());
 app.use(passport.session());
 
 
-app.get('/login', function(res, req){
-  req.render('login.ejs');
+app.get('/login', function(req, res){
+  res.render('login.ejs');
 })
 
 app.post('/login', passport.authenticate('local', {
   failureRedirect : 'fail'
-}), function(res, req){
-  req.redirect('/');
+}), function(req, res){
+  res.redirect('/');
 })
 
 passport.use(new LocalStrategy({
@@ -141,8 +143,8 @@ passport.deserializeUser(function(아이디, done){
   })
 })
 
-app.get('/fail', function(res, req){
-  req.render('fail.ejs');
+app.get('/fail', function(req, res){
+  res.render('fail.ejs');
 })
 
 /* 회원가입  */
@@ -153,29 +155,29 @@ app.post('/register', function(req, res){
 })
 
 /* 마이페이지 */
-app.get('/mypage', checkUser, function(res, req){
-  req.render('mypage.ejs', {사용자 : res.user});
+app.get('/mypage', checkUser, function(req, res){
+  res.render('mypage.ejs', {사용자 : req.user});
 })
 
-function checkUser(res, req, next){
-  if(res.user){
+function checkUser(req, res, next){
+  if(req.user){
     next();
   } else {
-    req.send('로그인 해주세요.');
+    res.send('로그인 해주세요.');
   }
 }
 
 /* 검색기능 */
-app.get('/search', (res, req) => {
-  /* 제목 : res.query.value => 검색 속도가 느리다 */
-  /* $text : { $search : res.query.value } => 한글 친화적이지 않음. 띄어쓰기 단위로 indexing 하기 때문에 단어만 쓰면 못찾음 */
+app.get('/search', (req, res) => {
+  /* 제목 : req.query.value => 검색 속도가 느리다 */
+  /* $text : { $search : req.query.value } => 한글 친화적이지 않음. 띄어쓰기 단위로 indexing 하기 때문에 단어만 쓰면 못찾음 */
   /* search index 사용 => 한글에 맞게 변경 가능 */
   let searchHow = [
     {
       $search: {
         index: 'searchTitle',/* 인덱스 명 */
         text: { /* 검색 요청 */
-          query: res.query.value,
+          query: req.query.value,
           path: '제목' /* 제목, 날짜 둘다 찾고 싶으면 ['제목', '날짜'] */ /* collection 안의 항목 */
         }
       }
@@ -191,7 +193,7 @@ app.get('/search', (res, req) => {
   db.collection('post').aggregate(searchHow).toArray((err, result) => {
     if(err) return console.log("err : ", err);
       console.log(result);
-      req.render('search.ejs', {posts : result});
+      res.render('search.ejs', {posts : result});
   });
 })
 
@@ -236,3 +238,8 @@ app.delete('/delete', function(req, res){
     // res.status(400).send({ message : "실패했습니다" });
   })
 })
+
+/* shop.js에서 변수 가져오기 */
+/* '/shop' 경로로 요청했을 때 미들웨어 적용 */
+app.use('/shop', require('./routes/shop.js'))
+app.use('/board/sub', require('./routes/board.js'))
