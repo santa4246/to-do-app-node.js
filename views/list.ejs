@@ -32,6 +32,7 @@
             <h4>할일 제목 : <%= posts[i].제목 %></h4>
             <p>할일 마감날짜 : <%= posts[i].날짜 %></p>
             <button class="btn btn-danger delete" data-id="<%= posts[i]._id %>">삭제</button>
+            <button class="btn btn-secondary chat" data-id="<%= posts[i].작성자 %>">채팅</button>
           </li>
         <% } %>
       </ul>
@@ -40,7 +41,6 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
 
     <script>
-
       $('.delete').click(function(e){
         let num = e.target.dataset.id;
         let clickBtn = $(this);
@@ -61,6 +61,14 @@
       $('#search').click(function(){
         let value = $('#search-input').val();
         window.location.replace('/search?value=' + value);
+      })
+
+      /* chat 버튼 script */
+      $('.chat').click(function(e){
+        let _id = e.target.dataset.id;
+        $.post('/chatroom', {selectedUserId : _id}).then(()=>{
+          console.log('성공');
+        })
       })
     </script>
 

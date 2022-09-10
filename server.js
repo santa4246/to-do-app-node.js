@@ -4,6 +4,7 @@ const app = express();
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended : true}));
 const MongoClient = require('mongodb').MongoClient;
+const { ObjectId } = require('mongodb');
 const methodOverride = require('method-override');
 app.use(methodOverride('_method'));
 app.set('view engine', 'ejs');
@@ -292,3 +293,25 @@ app.get('/image/:imageName', function(req, res){
   /* __dirname : 현재파일 경로 */
   res.sendFile(__dirname + '/public/image/' + req.params.imageName)
 });
+
+/* chatroom */
+app.post('/chatroom', checkUser, function(req, res){
+  let data = {
+    title : '채팅방',
+    member : [ObjectId(req.body.selectedUserId), req.user._id],
+    date : new Date()
+  }
+  db.collection('chatroom').insertOne(data).then((result)=>{
+    res.send('성공');
+  });
+});
+
+app.get('/chat', checkUser, function(req, res){
+
+  db.collection('chatroom').find({ member : req.user._id }).toArray().then((result)=>{
+    /* result : db에서 찾은 결과 */
+    res.render('chat.ejs', { data : result })
+  })
+
+  res.render('chat.ejs');
+})
