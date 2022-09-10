@@ -148,6 +148,9 @@ app.get('/fail', function(req, res){
 })
 
 /* 회원가입  */
+app.get('/signup', function(req, res){
+  res.render('signup.ejs');
+})
 app.post('/register', function(req, res){
   db.collection('login').insertOne( { id : req.body.id, pw : req.body.pw }, function(err, result){
     res.redirect('/');
@@ -243,3 +246,49 @@ app.delete('/delete', function(req, res){
 /* '/shop' 경로로 요청했을 때 미들웨어 적용 */
 app.use('/shop', require('./routes/shop.js'))
 app.use('/board/sub', require('./routes/board.js'))
+
+
+/* 이미지 업로드 */
+/* multer 라이브러리 사용 */
+let multer = require('multer');
+let storage = multer.diskStorage({
+  destination : function(req, file, cb){
+    cb(null, './public/image')
+  },
+  filename : function(req, file, cb){
+    cb(null, file.originalname)
+  }
+});
+
+let path = require('path');
+let upload = multer({
+  storage: storage,
+  fileFilter: function(req, file, callback) {
+      let ext = path.extname(file.originalname);
+      if(ext !== '.png' && ext !== '.jpg' && ext !== '.jpeg') {
+          return callback(new Error('PNG, JPG만 업로드하세요'))
+      }
+      callback(null, true)
+  },
+  limits:{
+      fileSize: 1024 * 1024
+  }
+});
+
+app.get('/upload', function(req, res){
+  res.render('upload.ejs');
+});
+
+app.post('/upload', upload.single('profile'), function(req, res){
+  res.send('업로드 완료');
+});
+
+/* 한번에 여러 이미지 업로드하기 (html 코드 변경해야함) */
+/* app.post('/upload', upload.array('profile', 10), function(req, res){
+  res.send('업로드 완료');
+}); */
+
+app.get('/image/:imageName', function(req, res){
+  /* __dirname : 현재파일 경로 */
+  res.sendFile(__dirname + '/public/image/' + req.params.imageName)
+});
