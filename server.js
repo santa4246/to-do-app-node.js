@@ -312,6 +312,19 @@ app.get('/chat', checkUser, function(req, res){
     /* result : db에서 찾은 결과 */
     res.render('chat.ejs', { data : result })
   })
+})
 
-  res.render('chat.ejs');
+app.post('/message', checkUser, function(req, res){
+  let data = {
+    parent : req.body.parent,
+    content : req.body.content,
+    userid : req.user._id,
+    date : new Date()
+  }
+  db.collection('message').insertOne(data).then(()=>{
+    console.log('DB저장성공');
+    res.send('DB저장성공');
+  }).catch(()=>{
+    console.log('DB저장실패');
+  })
 })
