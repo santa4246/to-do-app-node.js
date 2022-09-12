@@ -327,4 +327,29 @@ app.post('/message', checkUser, function(req, res){
   }).catch(()=>{
     console.log('DB저장실패');
   })
-})
+});
+
+
+/* 서버와 유저간 실시간 소통채널 열기 */
+app.get('/message/:id', checkUser, function(req, res){
+  /* 헤더 수정하기 */
+  res.writeHead(200, {
+    "Connection": "keep-alive",
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache"
+  });
+
+  /* 일반 GET, POST 요청은 1회 요청시 1회 응답만 가능 */
+  /* 헤더 위와같이 수정 시 여러번 응답 가능 */
+
+  db.collection('message').find({ parent : req.params.id }).toArray().then((result)=>{
+    /* 유저에게 데이터 전송 */
+    /* event: 보낼 데이터 \n */
+    /* \n은 엔터의 의미 */
+    /* 문자만 보내줄 수 있기 때문에 object나 array는 JSON형식으로 변경 */
+    /* 안녕하세요 라는 이벤트를 테스트 명으로 전송 */
+    res.write('event: test\n');
+    res.write('data: ' + JSON.stringify(result) + '\n\n');
+  })
+
+});

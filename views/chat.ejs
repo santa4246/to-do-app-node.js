@@ -54,10 +54,21 @@
     <script>
       /* chatroomId : 지금 누른 채팅방 id */
       let chatroomId;
+      let eventSource;
       $('.list-group-item').click(function(){
         $(this).css('background-color', '#eee');
         chatroomId = $(this).attr('data-id');
-      })
+
+        /* GET 요청과 비슷 */
+        /* 실시간 데이터 전송하는 API를 받기 위한 특별한 GET 요청 방법 */
+        /* 실시간 소통채널 입장완료 */
+        eventSource = new EventSource('/message/' + chatroomId);
+
+        /* 서버에서 보낸 데이터 받기 */
+        eventSource.addEventListener('test', function(e){
+          console.log(JSON.parse(e.data));
+        });
+      });
       
       $('#send').click(function(){
         /* 채팅 내용 */
