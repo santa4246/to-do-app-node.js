@@ -352,4 +352,18 @@ app.get('/message/:id', checkUser, function(req, res){
     res.write('data: ' + JSON.stringify(result) + '\n\n');
   })
 
+  /* Change Stream 설정방법 */
+  const pipeline = [
+    /* 컬렉션 안의 원하는 document만 감시하고 싶으면 내용 추가 */
+    { $match: { 'fullDocument.parent' : req.params.id } }
+  ];
+  const collection = db.collection('message');
+  /* .watch() 붙이면 실시간으로 감시해줌 */
+  const changeStream = collection.watch(pipeline);
+  /* 해당 컬렉션에 변동 생기면 여기 코드가 실행됨 */
+  changeStream.on('change', (result)=>{
+    res.write('event: test\n');
+    res.write('data: ' + JSON.stringify([result.fullDocument]) + '\n\n');
+  });
+
 });

@@ -35,9 +35,6 @@
         <div class="col-9 p-0">
           <div class="chat-room">
             <ul class="list-group chat-content">
-              <li><span class="chat-box">채팅방1 내용</span></li>
-              <li><span class="chat-box">채팅방1 내용</span></li>
-              <li><span class="chat-box mine">채팅방1 내용</span></li>
             </ul>
           <div class="input-group">
             <input class="form-control" id="chat-input">
@@ -58,6 +55,12 @@
       $('.list-group-item').click(function(){
         $(this).css('background-color', '#eee');
         chatroomId = $(this).attr('data-id');
+        /* html 비우기 */
+        $('.chat-content').html('');
+
+        if(eventSource != undefined){
+          eventSource.close();
+        }
 
         /* GET 요청과 비슷 */
         /* 실시간 데이터 전송하는 API를 받기 위한 특별한 GET 요청 방법 */
@@ -66,7 +69,11 @@
 
         /* 서버에서 보낸 데이터 받기 */
         eventSource.addEventListener('test', function(e){
-          console.log(JSON.parse(e.data));
+          /* data : db에서 가져온 데이터 */
+          let data = JSON.parse(e.data);
+          data.forEach(function(i){
+            $('.chat-content').append('<li><span class="chat-box">' + i.content + '</span></li>')
+          });
         });
       });
       
