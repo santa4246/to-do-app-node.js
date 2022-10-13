@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="/public/main.css">
+
+    <title>Hello, world!</title>
+  </head>
+  <body>
+    
+    <%- include('nav.html') %>
+
+    <div>채팅방</div>
+    <input id="input1">
+    <div id="content"></div>
+    <button id="send">서버에 메세지 보내기</button>
+    <button id="room1">채팅방1 입장</button>
+    <button id="room1-send">채팅방1에서 메세지보내기</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.2/socket.io.js" integrity="sha512-VJ6+sp2E5rFQk05caiXXzQd1wBABpjEj1r5kMiLmGAAgwPItw1YpqsCCBtq8Yr1x6C49/mTpRdXtq8O2RcZhlQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
+    <script>
+      let socket = io();
+
+      /* 채팅방 1용 메세지 전송버튼 */
+      $('#room1-send').click(function(){
+        socket.emit('room1-send', '반가워 채팅방1 사람들아');
+      });
+
+      /* 채팅방 1로 서버에 요청 */
+      $('#room1').click(function(){
+        socket.emit('joinroom', '채팅방1');
+      });
+
+      $('#send').click(function(){
+        /* socket.emit(어떤 이름, 어떤 데이터); */
+        socket.emit('user-send', $('#input1').val());
+      });
+
+      /* 서버가 보내는 메세지 수신 */
+      socket.on('broadcast', function(data){
+        $('#content').append('<div>' + data + '</div>')
+      })
+    </script>
+  </body>
+</html>

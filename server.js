@@ -1,6 +1,12 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
+
+/* socket.io 셋팅방법 */
+const http = require('http').createServer(app);
+const {Server} = require('socket.io');
+const io = new Server(http);
+
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended : true}));
 const MongoClient = require('mongodb').MongoClient;
@@ -23,7 +29,7 @@ MongoClient.connect(process.env.DB_URL, function(err, client){
   /* todoapp 이라는 database에 연결 */
   db = client.db('todoapp');
 
-  app.listen(process.env.PORT, function(){
+  http.listen(process.env.PORT, function(){
     console.log('listening on 8080');
   });
   
@@ -367,3 +373,34 @@ app.get('/message/:id', checkUser, function(req, res){
   });
 
 });
+
+/* socket.io */
+app.get('/socket', function(req, res){
+  res.render('socket.ejs');
+})
+
+/* 웹소켓에 접속하면 내부 코드 실행 */
+io.on('connection', function(socket){
+  console.log('socket io 접속완료');
+
+  socket.on('room1-send', function(data){
+    /* room1에 들어간 유저에게 전송 */
+    io.to('room1').emit('broadcast', data);
+  });
+
+  /* 채팅방 1 */
+  socket.on('joinroom', function(data){
+    socket.join('room1');
+  })
+
+  /* user-send 라는 이름으로 메세지 보내면 내부 코드 실행 */
+  socket.on('user-send', function(data){
+    /* 서버에서 모든 유저에게 메세지 전송 */
+    io.emit('broadcast', data);
+
+    /* 서버에서 특정한 유저에게만 메세지 전송 */
+    /* io.to(socket.id).emit('broadcast', data); */
+  });
+
+});
+
