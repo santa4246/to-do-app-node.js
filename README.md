@@ -1,5 +1,5 @@
-# to-do-app-node.js
-Node.js, Eexpress.js를 이용하여 제작한 to-do-app입니다.
+# To-Do-App-node.js
+Node.js, Eexpress.js를 이용하여 제작한 to-do-app
 
 ### Node.js
 - Node + Express로 서버 REST API 제작
