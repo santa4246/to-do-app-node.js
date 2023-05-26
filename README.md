@@ -1,6 +1,8 @@
 # To-Do-App-node.js
 Node.js, Eexpress.js를 이용하여 제작한 to-do-app
 
+#
+
 ### Node.js
 - Node + Express로 서버 REST API 제작
 - 글쓰기/수정/삭제 기능 구현
@@ -10,12 +12,16 @@ Node.js, Eexpress.js를 이용하여 제작한 to-do-app
 - 웹소켓으로 채팅서비스 구현(socket.io)
 - 환경변수는 .env 파일에 저장
 
+#
+
 ### Views
 - EJS 템플릿을 사용한 HTML 개발
 - Bootstrap을 이용한 빠른 웹 UI 디자인
 - Ajax를 이용한 서버와 통신
 - HTML 조립식 개발
 - JQuery를 이용한 HTML 조작
+
+#
 
 ### Database
 - MongoDB
